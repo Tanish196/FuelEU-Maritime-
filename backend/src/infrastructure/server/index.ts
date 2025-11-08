@@ -15,7 +15,7 @@ app.use(express.urlencoded({ extended: true }));
 // Enable CORS for the frontend dev server (adjust origin in production)
 app.use(
     cors({
-        origin: process.env.FRONTEND_ORIGIN || "http://localhost:5174",
+        origin: process.env.FRONTEND_ORIGIN || "http://localhost:5173",
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allowedHeaders: ["Content-Type", "Authorization"],
     })
