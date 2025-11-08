@@ -2,7 +2,11 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { getComplianceCB, bankSurplus, applyBanked } from '../infrastructure/bankingApi';
 import type { ComplianceBalance, BankingResult } from '../../core/domain/Banking';
 
-export const BankingTab: React.FC = () => {
+interface BankingTabProps {
+    isActive: boolean;
+}
+
+export const BankingTab: React.FC<BankingTabProps> = ({ isActive }) => {
     const [balances, setBalances] = useState<ComplianceBalance[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -27,6 +31,14 @@ export const BankingTab: React.FC = () => {
     useEffect(() => {
         fetchBalances();
     }, [selectedYear]);
+
+    // Refetch data when tab becomes active
+    useEffect(() => {
+        if (isActive && balances.length > 0) {
+            // Only refetch if we already have data (not on initial mount)
+            fetchBalances();
+        }
+    }, [isActive]);
 
     // Auto-hide toast after 3 seconds
     useEffect(() => {

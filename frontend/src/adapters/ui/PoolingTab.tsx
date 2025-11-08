@@ -2,7 +2,11 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { getAdjustedCB, createPool } from '../infrastructure/poolingApi';
 import type { AdjustedCB, PoolResult } from '../../core/domain/Pooling';
 
-export const PoolingTab: React.FC = () => {
+interface PoolingTabProps {
+    isActive: boolean;
+}
+
+export const PoolingTab: React.FC<PoolingTabProps> = ({ isActive }) => {
     const [ships, setShips] = useState<AdjustedCB[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -22,6 +26,14 @@ export const PoolingTab: React.FC = () => {
     useEffect(() => {
         fetchShips();
     }, [selectedYear]);
+
+    // Refetch data when tab becomes active
+    useEffect(() => {
+        if (isActive && ships.length > 0) {
+            // Only refetch if we already have data (not on initial mount)
+            fetchShips();
+        }
+    }, [isActive]);
 
     // Auto-hide toast after 3 seconds
     useEffect(() => {

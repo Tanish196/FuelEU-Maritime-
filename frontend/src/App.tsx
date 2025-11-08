@@ -24,6 +24,7 @@ function App() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex space-x-8">
             <button
+              type="button"
               onClick={() => setActiveTab('routes')}
               className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'routes'
@@ -40,6 +41,7 @@ function App() {
             </button>
 
             <button
+              type="button"
               onClick={() => setActiveTab('compare')}
               className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'compare'
@@ -56,6 +58,7 @@ function App() {
             </button>
 
             <button
+              type="button"
               onClick={() => setActiveTab('banking')}
               className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'banking'
@@ -72,6 +75,7 @@ function App() {
             </button>
 
             <button
+              type="button"
               onClick={() => setActiveTab('pooling')}
               className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'pooling'
@@ -91,10 +95,18 @@ function App() {
       </nav>
 
       <main className="max-w-7xl mx-auto">
-        {activeTab === 'routes' && <RoutesTab />}
-        {activeTab === 'compare' && <CompareTab />}
-        {activeTab === 'banking' && <BankingTab />}
-        {activeTab === 'pooling' && <PoolingTab />}
+        <div style={{ display: activeTab === 'routes' ? 'block' : 'none' }}>
+          <RoutesTab isActive={activeTab === 'routes'} />
+        </div>
+        <div style={{ display: activeTab === 'compare' ? 'block' : 'none' }}>
+          <CompareTab isActive={activeTab === 'compare'} />
+        </div>
+        <div style={{ display: activeTab === 'banking' ? 'block' : 'none' }}>
+          <BankingTab isActive={activeTab === 'banking'} />
+        </div>
+        <div style={{ display: activeTab === 'pooling' ? 'block' : 'none' }}>
+          <PoolingTab isActive={activeTab === 'pooling'} />
+        </div>
       </main>
     </div>
   )

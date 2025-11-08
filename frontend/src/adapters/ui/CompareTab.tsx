@@ -13,7 +13,11 @@ import {
 import { getComparisonData } from '../infrastructure/compareApi';
 import type { RouteComparison } from '../../core/domain/Comparison';
 
-export const CompareTab: React.FC = () => {
+interface CompareTabProps {
+    isActive: boolean;
+}
+
+export const CompareTab: React.FC<CompareTabProps> = ({ isActive }) => {
     const [comparisons, setComparisons] = useState<RouteComparison[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -23,6 +27,14 @@ export const CompareTab: React.FC = () => {
     useEffect(() => {
         fetchComparisonData();
     }, []);
+
+    // Refetch data when tab becomes active
+    useEffect(() => {
+        if (isActive && comparisons.length > 0) {
+            // Only refetch if we already have data (not on initial mount)
+            handleRefresh();
+        }
+    }, [isActive]);
 
     const fetchComparisonData = async () => {
         try {
@@ -125,11 +137,10 @@ export const CompareTab: React.FC = () => {
                     <button
                         onClick={handleRefresh}
                         disabled={refreshing}
-                        className={`flex items-center space-x-2 px-4 py-2 rounded-md font-medium transition-colors ${
-                            refreshing
+                        className={`flex items-center space-x-2 px-4 py-2 rounded-md font-medium transition-colors ${refreshing
                                 ? 'bg-blue-400 text-white cursor-wait'
                                 : 'bg-blue-600 text-white hover:bg-blue-700'
-                        }`}
+                            }`}
                     >
                         {refreshing ? (
                             <>
@@ -148,28 +159,7 @@ export const CompareTab: React.FC = () => {
                 </div>
             </div>
 
-            {/* Chart */}
-            <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">GHG Intensity Comparison</h3>
-                <ResponsiveContainer width="100%" height={400}>
-                    <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="routeId" />
-                        <YAxis label={{ value: 'GHG Intensity (gCO₂e/MJ)', angle: -90, position: 'insideLeft' }} />
-                        <Tooltip
-                            formatter={(value: number) => `${value.toFixed(2)} gCO₂e/MJ`}
-                            contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #ccc' }}
-                        />
-                        <Legend />
-                        <Bar dataKey="baseline" name="Baseline Intensity" fill="#3b82f6" />
-                        <Bar dataKey="comparison" name="Route Intensity">
-                            {chartData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.compliant ? '#10b981' : '#ef4444'} />
-                            ))}
-                        </Bar>
-                    </BarChart>
-                </ResponsiveContainer>
-            </div>
+
 
             {/* Comparison Table */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -198,9 +188,8 @@ export const CompareTab: React.FC = () => {
                             {comparisons.map((comparison) => (
                                 <tr
                                     key={comparison.routeId}
-                                    className={`hover:bg-gray-50 transition-colors ${
-                                        comparison.compliant ? 'bg-green-50' : 'bg-red-50'
-                                    }`}
+                                    className={`hover:bg-gray-50 transition-colors ${comparison.compliant ? 'bg-green-50' : 'bg-red-50'
+                                        }`}
                                 >
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span className="text-sm font-medium text-gray-900">{comparison.routeId}</span>
@@ -213,9 +202,8 @@ export const CompareTab: React.FC = () => {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span
-                                            className={`text-sm font-medium ${
-                                                comparison.percentDiff > 0 ? 'text-red-600' : 'text-green-600'
-                                            }`}
+                                            className={`text-sm font-medium ${comparison.percentDiff > 0 ? 'text-red-600' : 'text-green-600'
+                                                }`}
                                         >
                                             {comparison.percentDiff > 0 ? '+' : ''}
                                             {comparison.percentDiff.toFixed(2)}%
@@ -293,7 +281,28 @@ export const CompareTab: React.FC = () => {
                     </div>
                 </div>
             </div>
-
+            {/* Chart */}
+            <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">GHG Intensity Comparison</h3>
+                <ResponsiveContainer width="100%" height={400}>
+                    <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="routeId" />
+                        <YAxis label={{ value: 'GHG Intensity (gCO₂e/MJ)', angle: -90, position: 'insideLeft' }} />
+                        <Tooltip
+                            formatter={(value: number) => `${value.toFixed(2)} gCO₂e/MJ`}
+                            contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #ccc' }}
+                        />
+                        <Legend />
+                        <Bar dataKey="baseline" name="Baseline Intensity" fill="#3b82f6" />
+                        <Bar dataKey="comparison" name="Route Intensity">
+                            {chartData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.compliant ? '#10b981' : '#ef4444'} />
+                            ))}
+                        </Bar>
+                    </BarChart>
+                </ResponsiveContainer>
+            </div>
             {/* Info Footer */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div className="flex items-start space-x-3">

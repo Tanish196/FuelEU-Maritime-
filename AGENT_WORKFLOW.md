@@ -401,5 +401,362 @@ export * from "./PoolMember";
 
 ---
 
-*This document will be updated as more agent and user interactions occur. For traceability, include a short description of why structural changes were made when you refactor files.*
+### Interaction 3: Express API Routes with CORS Issues
+
+**Date**: November 7, 2025  
+**Agent**: Cursor Agent  
+**Task**: Create Express routes for routes, banking, and pooling endpoints.
+
+**Prompt**:
+```
+Create Express routes for:
+1. GET /routes - fetch all routes
+2. POST /routes/baseline - set baseline route
+3. GET /routes/comparison - compare routes against baseline
+4. GET /banking/cb/:year - get compliance balances
+5. POST /banking/bank - bank surplus CB
+6. POST /banking/apply - apply banked CB
+7. GET /pooling/adjusted/:year - get adjusted CB
+8. POST /pooling/create - create pooling agreement
+
+Use hexagonal architecture with controllers in adapters/ and repository pattern in infrastructure/db/
+```
+
+**Generated Output**:
+```typescript
+// backend/src/adapters/routeController.ts
+export const getRoutes = async (req: Request, res: Response) => {
+  const routes = await routeRepository.findAll();
+  res.json(routes);
+};
+
+export const setBaseline = async (req: Request, res: Response) => {
+  const { route_id } = req.body;
+  await routeRepository.setBaseline(route_id);
+  res.json({ message: "Baseline set successfully" });
+};
+```
+
+**Issues & My Corrections**:
+
+1. **Issue**: No CORS middleware configured
+   ```typescript
+   // Agent didn't include CORS
+   const app = express();
+   app.use(express.json());
+   ```
+   **My Correction**:
+   ```typescript
+   import cors from 'cors';
+   
+   const app = express();
+   app.use(cors({
+     origin: 'http://localhost:5173',
+     credentials: true
+   }));
+   app.use(express.json());
+   ```
+
+2. **Issue**: Missing error handling in controllers
+   ```typescript
+   // Agent's code
+   export const getRoutes = async (req: Request, res: Response) => {
+     const routes = await routeRepository.findAll();
+     res.json(routes);
+   };
+   ```
+   **My Correction**:
+   ```typescript
+   export const getRoutes = async (req: Request, res: Response) => {
+     try {
+       const routes = await routeRepository.findAll();
+       res.json(routes);
+     } catch (error) {
+       console.error('Error fetching routes:', error);
+       res.status(500).json({ error: 'Failed to fetch routes' });
+     }
+   };
+   ```
+
+3. **Issue**: Inconsistent field naming (snake_case vs camelCase)
+   ```typescript
+   // Agent used database field names directly
+   const { route_id } = req.body;
+   ```
+   **My Correction**:
+   ```typescript
+   // Use camelCase in API, map to snake_case in repository
+   const { routeId } = req.body;
+   await routeRepository.setBaseline(routeId); // Repository handles mapping
+   ```
+
+---
+
+### Interaction 4: React Frontend Tab Components with Tailwind v4 Issues
+
+**Date**: November 8, 2025  
+**Agent**: Claude Code  
+**Task**: Create CompareTab, BankingTab, and PoolingTab components.
+
+**Prompt**:
+```
+Create a CompareTab component that:
+1. Fetches comparison data from /routes/comparison
+2. Displays a bar chart using recharts
+3. Shows a table with baseline vs route intensity
+4. Includes refresh button and loading states
+Use Tailwind CSS for styling with gradient backgrounds
+```
+
+**Generated Output**:
+```tsx
+// frontend/src/adapters/ui/CompareTab.tsx
+export const CompareTab: React.FC = () => {
+  const [comparisons, setComparisons] = useState<RouteComparison[]>([]);
+  
+  useEffect(() => {
+    fetchComparisonData();
+  }, []);
+
+  return (
+    <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-6">
+      {/* Component content */}
+    </div>
+  );
+};
+```
+
+**Issues & My Corrections**:
+
+1. **Issue**: Used Tailwind v3 gradient syntax instead of v4
+   ```tsx
+   // Agent's code (Tailwind v3)
+   <div className="bg-gradient-to-r from-blue-500 to-purple-600">
+   ```
+   **My Correction** (Tailwind v4):
+   ```tsx
+   <div className="bg-linear-to-r from-blue-500 to-purple-600">
+   ```
+
+2. **Issue**: Wrong API endpoint URL
+   ```typescript
+   // Agent used wrong port
+   const API_BASE = 'http://localhost:3001';
+   ```
+   **My Correction**:
+   ```typescript
+   const API_BASE = 'http://localhost:3000';
+   ```
+
+3. **Issue**: Component didn't refetch data when tab becomes active (stale data)
+   ```tsx
+   // Agent's initial implementation
+   useEffect(() => {
+     fetchComparisonData();
+   }, []); // Only fetches on mount
+   ```
+   **My Correction**:
+   ```tsx
+   interface CompareTabProps {
+     isActive: boolean;
+   }
+
+   export const CompareTab: React.FC<CompareTabProps> = ({ isActive }) => {
+     useEffect(() => {
+       fetchComparisonData();
+     }, []);
+
+     // Refetch when tab becomes active
+     useEffect(() => {
+       if (isActive && comparisons.length > 0) {
+         handleRefresh();
+       }
+     }, [isActive]);
+   };
+   ```
+
+---
+
+### Interaction 5: Tab State Management Bug
+
+**Date**: November 8, 2025  
+**Agent**: GitHub Copilot  
+**Task**: Fix tab switching causing page reloads and stale data.
+
+**Problem**: When switching tabs, components remounted causing loading screens. When baseline changed in Routes tab, Compare tab showed stale data until page reload.
+
+**Agent's Initial Solution**:
+```tsx
+// App.tsx - Conditional rendering
+<main className="max-w-7xl mx-auto">
+  {activeTab === 'routes' && <RoutesTab />}
+  {activeTab === 'compare' && <CompareTab />}
+  {activeTab === 'banking' && <BankingTab />}
+  {activeTab === 'pooling' && <PoolingTab />}
+</main>
+```
+
+**Issue**: This remounts components on every tab switch, losing state and triggering loading screens.
+
+**My Correction**:
+```tsx
+// App.tsx - CSS display toggling
+<main className="max-w-7xl mx-auto">
+  <div style={{ display: activeTab === 'routes' ? 'block' : 'none' }}>
+    <RoutesTab isActive={activeTab === 'routes'} />
+  </div>
+  <div style={{ display: activeTab === 'compare' ? 'block' : 'none' }}>
+    <CompareTab isActive={activeTab === 'compare'} />
+  </div>
+  <div style={{ display: activeTab === 'banking' ? 'block' : 'none' }}>
+    <BankingTab isActive={activeTab === 'banking'} />
+  </div>
+  <div style={{ display: activeTab === 'pooling' ? 'block' : 'none' }}>
+    <PoolingTab isActive={activeTab === 'pooling'} />
+  </div>
+</main>
+```
+
+**Result**: Components stay mounted (preserve state), but refresh data when tab becomes visible. No loading screens, fresh data guaranteed.
+
+---
+
+### Interaction 6: Prisma Repository Field Mapping Errors
+
+**Date**: November 7, 2025  
+**Agent**: ChatGPT (GPT-5)  
+**Task**: Create Prisma repository with proper field mapping.
+
+**Prompt**:
+```
+Create a Prisma repository for Routes that maps database fields to domain interfaces.
+Database fields: route_id, ghg_intensity, is_baseline
+Domain fields: routeId, ghgIntensity, isBaseline
+```
+
+**Generated Output**:
+```typescript
+// backend/src/infrastructure/db/RouteRepository.ts
+async findAll(): Promise<Route[]> {
+  const routes = await prisma.route.findMany();
+  return routes.map(r => ({
+    id: r.id,
+    routeId: r.route_id,
+    vesselType: r.vesselType,
+    fuelType: r.fuelType,
+    year: r.year,
+    ghgIntensity: r.ghg_intensity, // ✓ Correct
+    fuelConsumption: r.fuelConsumption,
+    distance: r.distance,
+    totalEmissions: r.totalEmissions,
+    isBaseline: r.is_baseline // ✓ Correct
+  }));
+}
+
+async setBaseline(route_id: string): Promise<void> {
+  await prisma.route.updateMany({
+    where: { is_baseline: true },
+    data: { is_baseline: false }
+  });
+  await prisma.route.update({
+    where: { route_id },
+    data: { is_baseline: true } // Issue: Missing camelCase mapping
+  });
+}
+```
+
+**Issue**: Inconsistent mapping in `setBaseline` method - used snake_case in queries instead of letting Prisma handle it.
+
+**My Correction**:
+```typescript
+async setBaseline(routeId: string): Promise<void> {
+  // First, unset all baselines
+  await prisma.route.updateMany({
+    where: { is_baseline: true },
+    data: { is_baseline: false }
+  });
+  
+  // Then set the new baseline
+  await prisma.route.update({
+    where: { route_id: routeId },
+    data: { is_baseline: true }
+  });
+}
+```
+
+I also manually verified all 15+ field mappings across all repository methods (RouteRepository, BankingRepository, PoolingRepository) to ensure consistency.
+
+---
+
+### Interaction 7: .gitignore Incomplete Generation
+
+**Date**: November 7, 2025  
+**Agent**: GitHub Copilot  
+**Task**: Generate comprehensive .gitignore file.
+
+**Generated Output** (last few lines):
+```gitignore
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+w
+```
+
+**Issue**: The last line was incomplete (`w` instead of `.node_repl_history`)
+
+**My Correction**:
+```gitignore
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
 .node_repl_history
+
+# Vite cache (added)
+.vite/
+```
+
+I also added `.vite/` which was causing 40MB+ of build cache to be tracked in git.
+
+---
+
+### Interaction 8: Tab Button Form Submission Bug
+
+**Date**: November 8, 2025  
+**Agent**: Cursor Agent  
+**Task**: Debug tab buttons causing page reload.
+
+**Problem**: Clicking tab navigation buttons caused page to reload.
+
+**Agent's Diagnosis**: Suggested checking for form submission or `href="#"` attributes.
+
+**My Investigation & Fix**:
+```tsx
+// Original code (implicit type)
+<button
+  onClick={() => setActiveTab('routes')}
+  className={/* styles */}
+>
+  Routes
+</button>
+```
+
+**Issue**: When button is inside a form context (even implicit), clicking it triggers form submission.
+
+**My Correction**:
+```tsx
+<button
+  type="button"  // Explicitly prevent form submission
+  onClick={() => setActiveTab('routes')}
+  className={/* styles */}
+>
+  Routes
+</button>
+```
+
+Applied to all 4 tab buttons (Routes, Compare, Banking, Pooling).
+
+---
+
+*This document will be updated as more agent and user interactions occur. For traceability, include a short description of why structural changes were made when you refactor files.*
