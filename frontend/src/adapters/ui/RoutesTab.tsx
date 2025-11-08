@@ -43,13 +43,27 @@ export const RoutesTab: React.FC = () => {
     };
 
     const handleSetBaseline = async (routeId: string) => {
+        // Prevent full page reloads by performing an optimistic in-memory update
+        const previousRoutes = routes;
+
         try {
             setSettingBaseline(routeId);
+
+            // Optimistically mark the selected route as baseline and clear others
+            setRoutes((prev) =>
+                prev.map((r) => ({
+                    ...r,
+                    isBaseline: r.routeId === routeId,
+                }))
+            );
+
             await setBaseline(routeId);
+
             setToast({ message: `Route ${routeId} set as baseline successfully!`, type: 'success' });
-            // Refresh routes to update baseline status
-            await fetchRoutes();
+            // No full page reload or full re-fetch required; state is updated optimistically
         } catch (err) {
+            // Revert optimistic update on failure
+            setRoutes(previousRoutes);
             const message = err instanceof Error ? err.message : 'Failed to set baseline';
             setToast({ message, type: 'error' });
         } finally {
@@ -259,6 +273,7 @@ export const RoutesTab: React.FC = () => {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                                             <button
+                                                type="button"
                                                 onClick={() => handleSetBaseline(route.routeId)}
                                                 disabled={route.isBaseline || settingBaseline === route.routeId}
                                                 className={`px-4 py-2 rounded-md font-medium transition-colors ${
