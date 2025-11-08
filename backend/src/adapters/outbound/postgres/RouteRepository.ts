@@ -40,4 +40,48 @@ export class RouteRepository implements IRouteRepository {
             );
         }
     }
+    async setBaseline(routeId: string): Promise<Route> {
+        try {
+            // First, check if the route exists
+            const existingRoute = await prisma.route.findUnique({
+                where: { route_id: routeId }
+            });
+
+            if (!existingRoute) {
+                throw new AppError(`Route with ID ${routeId} not found`, 404);
+            }
+
+            // Reset all baselines to false
+            await prisma.route.updateMany({ 
+                data: { is_baseline: false } 
+            });
+
+            // Set the new baseline
+            const updated = await prisma.route.update({
+                where: { route_id: routeId },
+                data: { is_baseline: true },
+            });
+
+            return {
+                id: updated.id,
+                routeId: updated.route_id,
+                vesselType: updated.vesselType,
+                fuelType: updated.fuelType,
+                year: updated.year,
+                ghgIntensity: updated.ghg_intensity,
+                fuelConsumption: updated.fuelConsumption,
+                distance: updated.distance,
+                totalEmissions: updated.totalEmissions,
+                isBaseline: updated.is_baseline,
+            };
+        } catch (error) {
+            if (error instanceof AppError) {
+                throw error;
+            }
+            throw new AppError(
+                `Failed to set baseline: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                500
+            );
+        }
+    }
 }
