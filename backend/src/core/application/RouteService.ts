@@ -1,9 +1,12 @@
 import type { IRouteRepository } from "../ports/IRouteRepository.js";
 
-export class RouteService{
-    constructor(private routeRepository: IRouteRepository){}
+export class RouteService {
+    constructor(private routeRepository: IRouteRepository) { }
 
-    async getAllRoutes(){
+    async getAllRoutes() {
         return this.routeRepository.getAllRoutes()
+    }
+    async setBaseline(routeId: string) {
+        return this.routeRepository.setBaseline(routeId);
     }
 }
