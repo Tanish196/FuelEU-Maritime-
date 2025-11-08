@@ -2,7 +2,11 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { getRoutes, setBaseline } from '../infrastructure/routesApi';
 import type { Route, RouteFilters } from '../../core/domain/Route';
 
-export const RoutesTab: React.FC = () => {
+interface RoutesTabProps {
+    isActive: boolean;
+}
+
+export const RoutesTab: React.FC<RoutesTabProps> = ({ isActive: _isActive }) => {
     const [routes, setRoutes] = useState<Route[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
