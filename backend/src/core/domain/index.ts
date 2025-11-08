@@ -3,3 +3,7 @@ export * from "./ShipCompliance.js";
 export * from "./BankEntry.js";
 export * from "./Pool.js";
 export * from "./PoolMember.js";
+export * from "./RouteComparison.js";
+export * from "./Banking.js";
+export * from "./Compliance.js";
+export * from "./Pooling.js";

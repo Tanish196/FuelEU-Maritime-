@@ -1,5 +1,8 @@
 import express from "express";
 import routesRouter from "../../adapters/inbound/http/routesRouter.js";
+import bankingRouter from "../../adapters/inbound/http/bankingRouter.js";
+import complianceRouter from "../../adapters/inbound/http/complianceRouter.js";
+import poolingRouter from "../../adapters/inbound/http/poolingRouter.js";
 import { errorHandler } from "../../shared/middleware/errorHandler.js";
 
 const app = express();
@@ -15,6 +18,9 @@ app.get("/health", (_req, res) => {
 
 // API routes
 app.use("/api/routes", routesRouter);
+app.use("/api/banking", bankingRouter);
+app.use("/api/compliance", complianceRouter);
+app.use("/api/pools", poolingRouter);
 
 // Error handler (must be last)
 app.use(errorHandler);
@@ -24,6 +30,9 @@ app.listen(Number(port), () => {
     console.log(`✅ Server running on port ${port}`);
     console.log(`🏥 Health: http://localhost:${port}/health`);
     console.log(`📍 Routes: http://localhost:${port}/api/routes`);
+    console.log(`💰 Banking: http://localhost:${port}/api/banking`);
+    console.log(`📊 Compliance: http://localhost:${port}/api/compliance`);
+    console.log(`🏊 Pooling: http://localhost:${port}/api/pools`);
 });
 
 export default app;

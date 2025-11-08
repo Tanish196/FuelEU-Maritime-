@@ -17,6 +17,16 @@ router.get('/', asyncHandler(async (req: Request, res: Response) => {
     });
 }));
 
+// GET /routes/comparison - Get comparison between baseline and other routes
+router.get('/comparison', asyncHandler(async (req: Request, res: Response) => {
+    const comparisons = await routeService.getRouteComparison();
+    res.status(200).json({
+        success: true,
+        data: comparisons,
+        count: comparisons.length
+    });
+}));
+
 // POST /routes/:routeId/baseline - Set a route as the baseline
 router.post("/:routeId/baseline", asyncHandler(async (req: Request, res: Response) => {
     const { routeId } = req.params;
