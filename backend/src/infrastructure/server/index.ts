@@ -1,5 +1,6 @@
 import express from "express";
 import routesRouter from "../../adapters/inbound/http/routesRouter.js";
+import bankingRouter from "../../adapters/inbound/http/bankingRouter.js";
 import { errorHandler } from "../../shared/middleware/errorHandler.js";
 
 const app = express();
@@ -15,6 +16,7 @@ app.get("/health", (_req, res) => {
 
 // API routes
 app.use("/api/routes", routesRouter);
+app.use("/api/banking", bankingRouter);
 
 // Error handler (must be last)
 app.use(errorHandler);
@@ -24,6 +26,7 @@ app.listen(Number(port), () => {
     console.log(`✅ Server running on port ${port}`);
     console.log(`🏥 Health: http://localhost:${port}/health`);
     console.log(`📍 Routes: http://localhost:${port}/api/routes`);
+    console.log(`💰 Banking: http://localhost:${port}/api/banking`);
 });
 
 export default app;
