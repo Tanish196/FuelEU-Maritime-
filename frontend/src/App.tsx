@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { RoutesTab } from './adapters/ui/RoutesTab'
 import { CompareTab } from './adapters/ui/CompareTab'
+import { BankingTab } from './adapters/ui/BankingTab'
 import './index.css'
 
-type TabType = 'routes' | 'compare';
+type TabType = 'routes' | 'compare' | 'banking';
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>('routes');
@@ -52,6 +53,22 @@ function App() {
                 <span>Compare</span>
               </div>
             </button>
+
+            <button
+              onClick={() => setActiveTab('banking')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'banking'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-center space-x-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Banking</span>
+              </div>
+            </button>
           </div>
         </div>
       </nav>
@@ -59,6 +76,7 @@ function App() {
       <main className="max-w-7xl mx-auto">
         {activeTab === 'routes' && <RoutesTab />}
         {activeTab === 'compare' && <CompareTab />}
+        {activeTab === 'banking' && <BankingTab />}
       </main>
     </div>
   )
