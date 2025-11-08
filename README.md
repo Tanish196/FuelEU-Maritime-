@@ -167,7 +167,7 @@ Frontend runs on `http://localhost:5173`
 B.Tech Computer Science & Engineering (3rd Year)  
 National Institute of Technology, Delhi  
 
-📧 Email: [tanish196@gmail.com](mailto:tanish196@gmail.com)  
+📧 Email: [tanish196@gmail.com](mailto:tanishjagetiya@gmail.com)  
 🔗 GitHub: [@Tanish196](https://github.com/Tanish196)  
 🔗 Repository: [FuelEU-Maritime-](https://github.com/Tanish196/FuelEU-Maritime-)
 
