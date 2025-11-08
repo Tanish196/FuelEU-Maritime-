@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import routesRouter from "../../adapters/inbound/http/routesRouter.js";
 import bankingRouter from "../../adapters/inbound/http/bankingRouter.js";
 import complianceRouter from "../../adapters/inbound/http/complianceRouter.js";
@@ -10,6 +11,15 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Enable CORS for the frontend dev server (adjust origin in production)
+app.use(
+    cors({
+        origin: process.env.FRONTEND_ORIGIN || "http://localhost:5174",
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"],
+    })
+);
 
 // Health check
 app.get("/health", (_req, res) => {
