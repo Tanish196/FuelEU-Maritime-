@@ -59,8 +59,15 @@ export const RoutesTab: React.FC = () => {
 
             await setBaseline(routeId);
 
+
+            try {
+                const fresh = await getRoutes();
+                setRoutes(fresh);
+            } catch (err) {
+                console.warn('Failed to revalidate routes after setting baseline', err);
+            }
+
             setToast({ message: `Route ${routeId} set as baseline successfully!`, type: 'success' });
-            // No full page reload or full re-fetch required; state is updated optimistically
         } catch (err) {
             // Revert optimistic update on failure
             setRoutes(previousRoutes);
