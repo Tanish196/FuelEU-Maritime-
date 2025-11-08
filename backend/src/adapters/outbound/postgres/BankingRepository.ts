@@ -70,36 +70,48 @@ export class BankingRepository implements IBankingRepository {
 
     async applyBanked(request: ApplyRequest): Promise<ApplyResponse> {
         try {
-            const cb_before = await this.getTotalBanked(request.shipId);
-
-            // Validate sufficient balance
-            if (request.applyAmount > cb_before) {
-                throw new AppError(
-                    `Insufficient banked balance. Available: ${cb_before}, Requested: ${request.applyAmount}`,
-                    400
-                );
-            }
-
+            // Validate amount before transaction
             if (request.applyAmount <= 0) {
                 throw new AppError("Apply amount must be positive", 400);
             }
 
-            // Create a negative entry to represent withdrawal
-            await prisma.bankEntry.create({
-                data: {
-                    ship_id: request.shipId,
-                    year: request.year,
-                    amount_gco2eq: -request.applyAmount, // Negative to subtract from total
-                },
+            // Use transaction to ensure atomic read-check-write
+            const result = await prisma.$transaction(async (tx) => {
+                // 1. Read current balance inside transaction
+                const balanceResult = await tx.bankEntry.aggregate({
+                    where: { ship_id: request.shipId },
+                    _sum: { amount_gco2eq: true },
+                });
+
+                const cb_before = balanceResult._sum.amount_gco2eq || 0;
+
+                // 2. Validate sufficient balance with transactional data
+                if (request.applyAmount > cb_before) {
+                    throw new AppError(
+                        `Insufficient banked balance. Available: ${cb_before}, Requested: ${request.applyAmount}`,
+                        400
+                    );
+                }
+
+                // 3. Create negative entry to withdraw credits
+                await tx.bankEntry.create({
+                    data: {
+                        ship_id: request.shipId,
+                        year: request.year,
+                        amount_gco2eq: -request.applyAmount, // Negative to subtract from total
+                    },
+                });
+
+                const cb_after = cb_before - request.applyAmount;
+
+                return {
+                    cb_before,
+                    applied: request.applyAmount,
+                    cb_after,
+                };
             });
 
-            const cb_after = cb_before - request.applyAmount;
-
-            return {
-                cb_before,
-                applied: request.applyAmount,
-                cb_after,
-            };
+            return result;
         } catch (error) {
             if (error instanceof AppError) {
                 throw error;
