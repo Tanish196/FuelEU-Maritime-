@@ -31,10 +31,18 @@ export class PoolingService {
         }
 
         for (const member of request.members) {
-            if (!member.shipId) {
+            // Ensure member is a plain non-null object (not array)
+            if (typeof member !== "object" || member === null || Array.isArray(member)) {
+                throw new AppError("All members must be objects", 400);
+            }
+
+            // shipId must exist and be a string
+            if (!("shipId" in member) || typeof (member as any).shipId !== "string") {
                 throw new AppError("All members must have a shipId", 400);
             }
-            if (typeof member.cb_before !== "number") {
+
+            // cb_before must be a finite number
+            if (typeof (member as any).cb_before !== "number" || Number.isNaN((member as any).cb_before) || !Number.isFinite((member as any).cb_before)) {
                 throw new AppError("All members must have a numeric cb_before", 400);
             }
         }
