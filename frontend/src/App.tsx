@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { RoutesTab } from './adapters/ui/RoutesTab'
 import { CompareTab } from './adapters/ui/CompareTab'
 import { BankingTab } from './adapters/ui/BankingTab'
+import { PoolingTab } from './adapters/ui/PoolingTab'
 import './index.css'
 
-type TabType = 'routes' | 'compare' | 'banking';
+type TabType = 'routes' | 'compare' | 'banking' | 'pooling';
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>('routes');
@@ -69,6 +70,22 @@ function App() {
                 <span>Banking</span>
               </div>
             </button>
+
+            <button
+              onClick={() => setActiveTab('pooling')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'pooling'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-center space-x-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span>Pooling</span>
+              </div>
+            </button>
           </div>
         </div>
       </nav>
@@ -77,6 +94,7 @@ function App() {
         {activeTab === 'routes' && <RoutesTab />}
         {activeTab === 'compare' && <CompareTab />}
         {activeTab === 'banking' && <BankingTab />}
+        {activeTab === 'pooling' && <PoolingTab />}
       </main>
     </div>
   )
