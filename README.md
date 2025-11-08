@@ -153,20 +153,6 @@ Frontend runs on `http://localhost:5173`
 
 ---
 
-## 📸 Screenshots
-
-<!-- Add screenshots here -->
-_Screenshots will be added upon deployment._
-
----
-
-## 🌐 Deployment
-
-- **Frontend:** [https://fueleu-maritime.vercel.app](https://fueleu-maritime.vercel.app) (Vercel)
-- **Backend:** [https://fueleu-backend.onrender.com](https://fueleu-backend.onrender.com) (Render)
-
----
-
 ## 📚 Documentation
 
 - `AGENT_WORKFLOW.md` – AI agent workflow documentation
